@@ -3,7 +3,7 @@ from typing import Union
 from aiogram.filters import BaseFilter
 from aiogram.types import Message
 
-ACTIONS = [('обнять', 'обнял(а)'), ('', ''), ('', '')]
+ACTIONS = [('обнять', 'обнял(а)'), ('поцеловать', 'поцеловал(а)'), ('кусь', 'кусьнул(а)')]
 
 
 class ChatTypeFilter(BaseFilter):
