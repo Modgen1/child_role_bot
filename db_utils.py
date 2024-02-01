@@ -23,7 +23,7 @@ def db_init(chat_id):
         CREATE TABLE IF NOT EXISTS chat{str(chat_id)[1:]} (
         id INTEGER PRIMARY KEY,
         username TEXT NOT NULL,
-        email TEXT NOT NULL,
-        age INTEGER
+        user_id INTEGER NOT NULL,
+        first_name TEXT NOT NULL
         )
         ''')
