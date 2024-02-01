@@ -7,7 +7,6 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from config_reader import config
 from handlers import router
-import db_utils
 
 
 async def main():
@@ -20,5 +19,4 @@ async def main():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    db_utils.db_init()
     asyncio.run(main())
