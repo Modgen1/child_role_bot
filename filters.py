@@ -34,7 +34,7 @@ class BotCommandsFilter(BaseFilter):
         pass
 
     async def __call__(self, message: Message) -> bool:
-        if 'чай' in message.text.lower():
+        if message.text.lower().startswith('чай'):
             return True
         else:
             return False
