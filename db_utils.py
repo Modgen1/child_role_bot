@@ -24,7 +24,7 @@ def db_init(chat_id):
         id INTEGER PRIMARY KEY,
         username TEXT NOT NULL,
         user_id INTEGER NOT NULL,
-        first_name TEXT NOT NULL, 
+        real_name TEXT NOT NULL, 
         nickname TEXT
         )
         ''')

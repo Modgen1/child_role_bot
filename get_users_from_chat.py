@@ -14,6 +14,6 @@ async def get_chat_members(chat_id):
     with db_ops() as cur:
         async for member in app.get_chat_members(chat_id):
             cur.execute(f'''
-            INSERT INTO chat{str(chat_id)[1:]} (username, user_id, first_name) VALUES (?, ?, ?)''',
-                        (member.user.username, member.user.id, member.user.first_name))
+            INSERT INTO chat{str(chat_id)[1:]} (username, user_id, real_name) VALUES (?, ?, ?)''',
+                        (member.user.username, member.user.id, (member.user.first_name + ' ' + member.user.last_name) if member.user.last_name is not None else member.user.first_name))
     await app.stop()
