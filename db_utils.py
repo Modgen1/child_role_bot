@@ -26,6 +26,7 @@ def db_init(chat_id):
         user_id INTEGER NOT NULL,
         real_name TEXT NOT NULL, 
         nickname TEXT,
-        is_admin BOOLEAN
+        is_admin BOOLEAN NOT NULL,
+        UNIQUE(username, user_id)
         )
         ''')

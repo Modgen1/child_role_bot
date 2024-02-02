@@ -38,3 +38,11 @@ class BotCommandsFilter(BaseFilter):
             return True
         else:
             return False
+
+
+class PingFilter(BaseFilter):
+    async def __call__(self, message: Message) -> bool:
+        if message.text.lower() == 'пинг' or message.text.lower() == 'Пинг':
+            return True
+        else:
+            return False
