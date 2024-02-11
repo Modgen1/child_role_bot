@@ -30,3 +30,15 @@ def db_init(chat_id):
         UNIQUE(username, user_id)
         )
         ''')
+
+        cur.execute(f'''
+        CREATE TABLE IF NOT EXISTS relationships{str(chat_id)[1:]} (
+        id INTEGER PRIMARY KEY,
+        from_id INTEGER NOT NULL,
+        to_id INTEGER NOT NULL,
+        accepted BOOLEAN NOT NULL,
+        score INTEGER,
+        last_action DATETIME,
+        start_date DATETIME
+        )
+        ''')
