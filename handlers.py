@@ -69,9 +69,9 @@ async def commands_handling(message: Message):
         await commands.rel_agree(message)
     elif message.text.lower().startswith('чай отказаться'):
         await commands.rel_reject(message)
-    elif message.text.lower().startswith('чай мои отношения'):
+    elif message.text.lower().startswith('чай мои отношения') or message.text.lower().startswith('чай мои отны'):
         await commands.rel_personal_status(message)
-    elif message.text.lower().startswith('чай все отношения'):
+    elif message.text.lower().startswith('чай все отношения') or message.text.lower().startswith('чай все отны'):
         await commands.rel_total_status(message)
     elif message.text.lower().startswith('чай подарок'):
         await commands.rel_gift(message)

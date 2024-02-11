@@ -38,6 +38,8 @@ async def reply_mention_handler(message: Message) -> (int, str):
                 cur.execute(f'SELECT user_id FROM chat{str(message.chat.id)[1:]} WHERE username = ?',
                             (mention.group(1),))
                 user_id = cur.fetchall()[0][0]
+                if not user_id:
+                    return None, None
                 return user_id, name
             else:
                 return None, None
@@ -211,7 +213,22 @@ async def rel_start(message: Message):
 
 
 async def rel_stop(message: Message):
-    pass  # TODO
+    to_stop_id, to_stop_name = (await reply_mention_handler(message))
+    if not to_stop_id:
+        await message.reply(f'<b>Пользователь не обнаружен в чате.</b>')
+        return
+    fetched = await _check_rel(message.from_user.id, to_stop_id, message.chat.id)
+    if fetched:
+        with db_ops() as cur:
+            cur.execute(f'DELETE FROM relationships{str(message.chat.id)[1:]} WHERE id = ?', (fetched[0][0], ))
+        if fetched[0][3]:
+            await message.reply(f'<b>Вы расстались с <a href="tg://user?id={to_stop_id}">{to_stop_name}</a>.</b>')
+        else:
+            await message.reply(f'<b>Вы отказались от предложения отношений с '
+                                f'<a href="tg://user?id={to_stop_id}">{to_stop_name}</a>.</b>')
+    else:
+        await message.reply(f'<b>Вы не состоите в отношениях с '
+                            f'<a href="tg://user?id={to_stop_id}">{to_stop_name}</a>.</b>')
 
 
 async def rel_agree(message: Message):
@@ -254,8 +271,8 @@ async def rel_reject(message: Message):
             if message.from_user.id == fetched[0][2]:
                 with db_ops() as cur:
                     cur.execute(f'DELETE FROM relationships{str(message.chat.id)[1:]} WHERE id = ?', (fetched[0][0], ))
-                    await message.reply(f'<b>Вы отказались от отношений с '
-                                        f'<a href="tg://user?id={to_reject_id}">{to_reject_name}</a>.</b>')
+                await message.reply(f'<b>Вы отказались от отношений с '
+                                    f'<a href="tg://user?id={to_reject_id}">{to_reject_name}</a>.</b>')
             else:
                 await message.reply('<b>Вы не можете отказаться от отношений, которые вы сами начали.</b>')
     else:
@@ -307,9 +324,34 @@ async def _rel_status_text(message: Message, accepted, not_accepted):
         for relationship in not_accepted:
             name_first = await get_name_by_id(message, relationship[1])
             name_second = await get_name_by_id(message, relationship[2])
-            text += f'\t<a href="tg://user?id={relationship[1]}">{name_first}</a> и <a href="tg://user?id={relationship[2]}">{name_second}</a>.\n'
+            text += (f'\t<a href="tg://user?id={relationship[1]}">{name_first}</a> и '
+                     f'<a href="tg://user?id={relationship[2]}">{name_second}</a>.\n')
     return text
 
 
 async def rel_gift(message: Message):
+    to_gift_id, to_gift_name = (await reply_mention_handler(message))
+    if not to_gift_id:
+        with db_ops() as cur:
+            cur.execute(f'SELECT * FROM relationships{str(message.chat.id)[1:]} WHERE from_id = ? or to_id = ?',
+                        (message.from_user.id,message.from_user.id))
+            fetched = cur.fetchall()
+        if fetched:
+            main_person = [None, None, None, None, -1, None, None]
+            for relationship in fetched:
+                if relationship[4] > main_person[4]:
+                    main_person = relationship
+            await _gift_to(message, main_person)
+        else:
+            await message.reply('<b>Вы не состоите ни в одних отношениях.</b>')
+    else:
+        fetched = await _check_rel(message.from_user.id, to_gift_id, message.chat.id)
+        if fetched:
+            await _gift_to(message, fetched[0])
+        else:
+            await message.reply(f'<b>Вы не состоите в отношениях с '
+                                f'<a href="tg://user?id={to_gift_id}">{to_gift_name}</a>.</b>')
+
+
+async def _gift_to(message: Message, person):
     pass  # TODO
