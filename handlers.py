@@ -19,6 +19,11 @@ async def start_handler(message: Message):
     await message.reply('Бот успешно добавлен в чат!')
 
 
+@router.message(Command('help', 'h', 'помощь'))
+async def command_list(message: Message):
+    await message.answer('')  # TODO
+
+
 @router.message(PingFilter())
 async def ping_handler(message: Message):
     await message.reply('Понг')
@@ -58,18 +63,20 @@ async def commands_handling(message: Message):
         await commands.demote_admin(message)
     elif message.text.lower().startswith('чай +отн'):
         await commands.rel_start(message)
-    elif message.text.lower().startswith('чай -отн'):
+    elif message.text.lower().startswith('чай расстаться'):
         await commands.rel_stop(message)
     elif message.text.lower().startswith('чай согласиться'):
         await commands.rel_agree(message)
     elif message.text.lower().startswith('чай отказаться'):
-        await commands.rel_cancel(message)
+        await commands.rel_reject(message)
     elif message.text.lower().startswith('чай мои отношения'):
         await commands.rel_personal_status(message)
     elif message.text.lower().startswith('чай все отношения'):
         await commands.rel_total_status(message)
     elif message.text.lower().startswith('чай подарок'):
         await commands.rel_gift(message)
+    elif message.text.lower().startswith('чай команды'):
+        await command_list(message)
 
 
 @router.message(F.new_chat_members)
