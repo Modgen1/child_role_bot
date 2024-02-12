@@ -313,12 +313,12 @@ async def _rel_status_text(message: Message, accepted, not_accepted):
     text = ''
     if accepted:
         for relationship in accepted:
-            time = relationship[6].strftime('%d.%m.%Y, %H:%M')
+            time = datetime.strptime(relationship[6], '%Y-%m-%d %H:%M:%S.%f')
             name_first = await get_name_by_id(message, relationship[1])
             name_second = await get_name_by_id(message, relationship[2])
             text += (f'\t<a href="tg://user?id={relationship[1]}">{name_first}</a> и '
-                     f'<a href="tg://user?id={relationship[2]}">{name_second}</a>.\n'
-                     f'\t\tВстречаются с {time}. Очки: {relationship[4]}\n')
+                     f'<a href="tg://user?id={relationship[2]}">{name_second}</a>. Очки: {relationship[4]}\n'
+                     f'\t\tВстречаются с {time.strftime("%d/%m/%Y %H:%M:%S")}.\n')
     else:
         text += f'Активных отношений на данный момент нет.\n'
     if not_accepted:
@@ -356,26 +356,39 @@ async def rel_gift(message: Message):
 
 
 async def _gift_to(message: Message, person):
-    score = person[4]
-    if score <= 100:
-        lower_bound = 10
-        upper_bound = 50
+    if person[5]:
+        last_action = datetime.strptime(person[5], '%Y-%m-%d %H:%M:%S.%f')
     else:
-        lower_bound = int((0.5 / math.sqrt(math.log(score[-1], 2) + 5)) * score)
-        upper_bound = int((1 / math.sqrt(math.log(score[-1], 2) + 5)) * score)
-    to_add = randint(lower_bound, upper_bound)
-    with db_ops() as cur:
-        cur.execute(f'UPDATE relationships{str(message.chat.id)[1:]} SET score = ? WHERE id = ?',
-                    (score + to_add, person[0]))
-    to_add_str = (await _get_score_str(to_add))
-    total_score_str = (await _get_score_str(score + to_add))
-    if message.from_user.id == person[1]:
-        partner = person[2]
+        last_action = None
+    time = datetime.now()
+    if not person[5] or time.timestamp() > (last_action + timedelta(hours=4)).timestamp():
+        score = person[4]
+        if score <= 100:
+            lower_bound = 10
+            upper_bound = 50
+        else:
+            lower_bound = int((0.5 / math.sqrt(math.log(score[-1], 2) + 5)) * score)
+            upper_bound = int((1 / math.sqrt(math.log(score[-1], 2) + 5)) * score)
+        to_add = randint(lower_bound, upper_bound)
+        with db_ops() as cur:
+            cur.execute(f'UPDATE relationships{str(message.chat.id)[1:]} SET score = ?, last_action = ? WHERE id = ?',
+                        (score + to_add, time, person[0]))
+        to_add_str = (await _get_score_str(to_add))
+        total_score_str = (await _get_score_str(score + to_add))
+        if message.from_user.id == person[1]:
+            partner = person[2]
+        else:
+            partner = person[1]
+        partner_name = (await get_name_by_id(message, partner))
+        await message.reply(f'<b>Вы сделали подарок <a href="tg://user?id={partner}">{partner_name}</a>. '
+                            f'Крепость ваших отношений усилилась на {to_add_str}. Текущий счёт ваших отношений - '
+                            f'{total_score_str}.\nВы можете сделать следующий подарок через 4 часа.</b>')
     else:
-        partner = person[1]
-    partner_name = get_name_by_id(message, partner)
-    await message.reply(f'<b>Вы сделали подарок <a href="tg://user?id={partner}">{partner_name}</a>. Крепость ваших '
-                        f'отношений усилилась на {to_add_str}. Текущий счёт ваших отношений - {total_score_str}</b>')
+        next_gift = last_action + timedelta(hours=4) - time
+        hours, remainder = divmod(next_gift.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        await message.reply(f'С момента прошлого подарка прошло недостаточно времени, вы сможете сделать следующий '
+                            f'подарок через {hours} часов, {minutes} минут и {seconds} секунд')
 
 
 async def _get_score_str(score):
