@@ -1,6 +1,8 @@
 import math
 from datetime import datetime, timedelta
 from random import randint
+from bs4 import BeautifulSoup
+import requests
 from aiogram.types import Message, ChatPermissions
 import re
 
@@ -367,8 +369,8 @@ async def _gift_to(message: Message, person):
             lower_bound = 10
             upper_bound = 50
         else:
-            lower_bound = int((0.5 / math.sqrt(math.log(score[-1], 2) + 5)) * score)
-            upper_bound = int((1 / math.sqrt(math.log(score[-1], 2) + 5)) * score)
+            lower_bound = int((0.5 / math.sqrt(math.log(score, 2) + 4)) * score)
+            upper_bound = int((0.9 / math.sqrt(math.log(score, 2) + 4)) * score)
         to_add = randint(lower_bound, upper_bound)
         with db_ops() as cur:
             cur.execute(f'UPDATE relationships{str(message.chat.id)[1:]} SET score = ?, last_action = ? WHERE id = ?',
@@ -399,3 +401,17 @@ async def _get_score_str(score):
     else:
         score_str = str(score)
     return score_str
+
+
+async def horoscope(message: Message):
+    signs = {'овен':'aries', 'телец':'taurus', 'близнецы':'gemini', 'рак':'cancer', 'лев':'leo', 'дева': 'virgo',
+             'весы':'libra', 'скорпион':'scorpio', 'стрелец':'sagittarius', 'козерог':'capricorn',
+             'водолей':'aquarius', 'рыбы':'pisces'}
+    sign = message.text.split(' ')[-1].lower()
+    if sign in signs.keys():
+        res = requests.get(f'https://horo.mail.ru/prediction/{signs[sign]}/today/')
+        soup = BeautifulSoup(res.content, 'html.parser')
+        data = soup.find('div', attrs={'class': 'article__item article__item_alignment_left article__item_html'})
+        await message.reply(f'<b> Гороскоп на сегодня для {sign}:</b>\n\n{data.p.text}')
+    else:
+        await message.reply('Такой знак зодиака не обнаружен.')
