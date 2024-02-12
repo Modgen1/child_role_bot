@@ -1,4 +1,6 @@
+import math
 from datetime import datetime, timedelta
+from random import randint
 from aiogram.types import Message, ChatPermissions
 import re
 
@@ -354,4 +356,33 @@ async def rel_gift(message: Message):
 
 
 async def _gift_to(message: Message, person):
-    pass  # TODO
+    score = person[4]
+    if score <= 100:
+        lower_bound = 10
+        upper_bound = 50
+    else:
+        lower_bound = int((0.5 / math.sqrt(math.log(score[-1], 2) + 5)) * score)
+        upper_bound = int((1 / math.sqrt(math.log(score[-1], 2) + 5)) * score)
+    to_add = randint(lower_bound, upper_bound)
+    with db_ops() as cur:
+        cur.execute(f'UPDATE relationships{str(message.chat.id)[1:]} SET score = ? WHERE id = ?',
+                    (score + to_add, person[0]))
+    to_add_str = (await _get_score_str(to_add))
+    total_score_str = (await _get_score_str(score + to_add))
+    if message.from_user.id == person[1]:
+        partner = person[2]
+    else:
+        partner = person[1]
+    partner_name = get_name_by_id(message, partner)
+    await message.reply(f'<b>Вы сделали подарок <a href="tg://user?id={partner}">{partner_name}</a>. Крепость ваших '
+                        f'отношений усилилась на {to_add_str}. Текущий счёт ваших отношений - {total_score_str}</b>')
+
+
+async def _get_score_str(score):
+    power = math.floor(math.log10(score))
+    magnitude = power // 3
+    if magnitude > 0:
+        score_str = f'{round(score, -1 * power + 2) / 1000 ** magnitude}{["", "k", "M", "B", "T"][magnitude]}'
+    else:
+        score_str = str(score)
+    return score_str
