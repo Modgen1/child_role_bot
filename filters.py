@@ -30,9 +30,6 @@ class ActionsFilter(BaseFilter):
 
 
 class BotCommandsFilter(BaseFilter):
-    def __init__(self):
-        pass
-
     async def __call__(self, message: Message) -> bool:
         if message.text.lower().startswith('чай'):
             return True
@@ -42,7 +39,7 @@ class BotCommandsFilter(BaseFilter):
 
 class PingFilter(BaseFilter):
     async def __call__(self, message: Message) -> bool:
-        if message.text.lower() == 'пинг' or message.text.lower() == 'Пинг':
+        if message.text and (message.text.lower() == 'пинг' or message.text.lower() == 'Пинг'):
             return True
         else:
             return False

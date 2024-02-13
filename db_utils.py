@@ -22,7 +22,7 @@ def db_init(chat_id):
         cur.execute(f'''
         CREATE TABLE IF NOT EXISTS chat{str(chat_id)[1:]} (
         id INTEGER PRIMARY KEY,
-        username TEXT NOT NULL,
+        username TEXT,
         user_id INTEGER NOT NULL,
         real_name TEXT NOT NULL, 
         nickname TEXT,
