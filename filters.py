@@ -23,10 +23,9 @@ class ActionsFilter(BaseFilter):
 
     async def __call__(self, message: Message) -> bool:
         for action in self.actions:
-            if action[0] in message.text.lower():
+            if message.text.lower().startswith(action[0]):
                 return True
-            else:
-                return False
+        return False
 
 
 class BotCommandsFilter(BaseFilter):
