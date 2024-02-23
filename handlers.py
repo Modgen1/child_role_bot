@@ -39,8 +39,8 @@ async def actions_handling(message: Message):
             if receiver_name:
                 action_length = len(action[0])
                 await message.reply(f'<a href="tg://user?id={message.from_user.id}">{sender_name}</a> {action[1]} '
-                                    f'<a href="tg://user?id={receiver_id}">{receiver_name} '
-                                    f'{message.text[action_length:]}</a>')
+                                    f'<a href="tg://user?id={receiver_id}">{receiver_name}</a>'
+                                    f'{message.text[action_length:]}')
                 return
 
 
