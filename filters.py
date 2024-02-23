@@ -3,7 +3,16 @@ from typing import Union
 from aiogram.filters import BaseFilter
 from aiogram.types import Message
 
-ACTIONS = [('обнять', 'обнял(а)'), ('поцеловать', 'поцеловал(а)'), ('кусь', 'кусьнул(а)')]
+ACTIONS = [('обнять', 'обнял(а)'), ('поцеловать', 'поцеловал(а)'), ('кусь', 'кусьнул(а)'), ('буп', 'сделал(а) буп'),
+           ('бупнуть', 'сделал(а) буп'), ('пожать руку', 'пожал(а) руку'), ('кусьнуть', 'кусьнул(а)'),
+           ('укусить', 'укусил(а)'), ('лизнуть', 'лизнул(а)'), ('убить', 'убил(а)'), ('сжечь', 'сжёг'),
+           ('ударить', 'ударил(а)'), ('уебать', 'уебал(а)'), ('трахнуть', 'трахнул(а)'), ('выебать', 'выебал(а)'),
+           ('изнасиловать', 'изнасиловал(а)'), ('погладить', 'погладил(а)'), ('шлёпнуть', 'шлёпнул(а)'),
+           ('расстрелять', 'расстрелял(а)'), ('кастрировать', 'кастрировал(а)'), ('пнуть', 'пнул(а)'),
+           ('потрогать', 'потрогал(а)'), ('облапать', 'облапал(а)'), ('похвалить', 'похвалил(а)'),
+           ('поздравить', 'поздравил(а)'), ('послать нахуй', 'послал(а) нахуй'), ('понюхать', 'понюхал(а)'),
+           ('нюх', 'понюхал(а)'), ('ущипнуть', 'ущипнул(а)'), ('покормить', 'покормил(а)'), ('отравить', 'отравил(а)'),
+           ('пригласить на чай', 'приглашает на чай'), ('записать на ноготочки', 'записал(а) на ноготочки')]
 
 
 class ChatTypeFilter(BaseFilter):
@@ -23,14 +32,14 @@ class ActionsFilter(BaseFilter):
 
     async def __call__(self, message: Message) -> bool:
         for action in self.actions:
-            if message.text.lower().startswith(action[0]):
+            if message.text and message.text.lower().startswith(action[0]):
                 return True
         return False
 
 
 class BotCommandsFilter(BaseFilter):
     async def __call__(self, message: Message) -> bool:
-        if message.text.lower().startswith('чай'):
+        if message.text and message.text.lower().startswith('чай'):
             return True
         else:
             return False
@@ -38,7 +47,7 @@ class BotCommandsFilter(BaseFilter):
 
 class PingFilter(BaseFilter):
     async def __call__(self, message: Message) -> bool:
-        if message.text and (message.text.lower() == 'пинг' or message.text.lower() == 'Пинг'):
+        if message.text and message.text.lower() == 'пинг':
             return True
         else:
             return False
